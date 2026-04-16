@@ -1,5 +1,7 @@
 from aiogram import F, Router, types
-from aiogram.filters import Command
+from aiogram.filters import Command, StateFilter
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 
 from filters.chat_types import ChatTypeFilter, IsAdmin
 from kbds.reply import get_keyboard
@@ -38,43 +40,58 @@ async def change_product(message: types.Message):
 async def delete_product(message: types.Message):
     await message.answer("Select the product(s) to delete")
 
+class AddProduct(StatesGroup):
+    name = State()
+    description = State()
+    price = State()
+    image = State()
 
-# FSM (Finite State Machine) handlers below
 
-@admin_router.message(F.text == "Add product")
-async def add_product(message: types.Message):
+@admin_router.message(StateFilter(None), F.text == "Add product")
+async def add_product(message: types.Message, state: FSMContext):
     await message.answer(
         "Enter product name", reply_markup=types.ReplyKeyboardRemove()
     )
+    await state.set_state(AddProduct.name)
 
 
 @admin_router.message(Command("cancel"))
 @admin_router.message(F.text.casefold() == "cancel")
-async def cancel_handler(message: types.Message) -> None:
+async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     await message.answer("Actions cancelled", reply_markup=ADMIN_KB)
 
 
 @admin_router.message(Command("back"))
 @admin_router.message(F.text.casefold() == "back")
-async def back_step_handler(message: types.Message) -> None:
+async def back_step_handler(message: types.Message, state: FSMContext) -> None:
     await message.answer("OK, you've returned to the previous step")
 
 
-@admin_router.message(F.text)
-async def add_name(message: types.Message):
+@admin_router.message(AddProduct.name,F.text)
+async def add_name(message: types.Message, state: FSMContext):
+    await state.update_data(name=message.text)
     await message.answer("Enter product description")
+    await state.set_state(AddProduct.description)
 
 
-@admin_router.message(F.text)
-async def add_description(message: types.Message):
+@admin_router.message(AddProduct.description, F.text)
+async def add_description(message: types.Message, state: FSMContext):
+    await state.update_data(description=message.text)
     await message.answer("Enter product price")
+    await state.set_state(AddProduct.price)
 
 
-@admin_router.message(F.text)
-async def add_price(message: types.Message):
+
+@admin_router.message(AddProduct.price,F.text)
+async def add_price(message: types.Message, state: FSMContext):
+    await state.update_data(price=message.text)
     await message.answer("Upload product image")
+    await state.set_state(AddProduct.image)
 
-
-@admin_router.message(F.photo)
-async def add_image(message: types.Message):
+@admin_router.message(AddProduct.image, F.photo)
+async def add_image(message: types.Message, state: FSMContext):
+    await state.update_data(image=message.photo[-1].file_id)
     await message.answer("Product added successfully", reply_markup=ADMIN_KB)
+    data = await state.get_data()
+    await message.answer(str(data))
+    await state.clear()
