@@ -100,6 +100,21 @@ async def add_name(message: types.Message, state: FSMContext):
     await state.set_state(AddProduct.description)
 
 
+@admin_router.message(AddProduct.name, F.text)
+async def add_name(message: types.Message, state: FSMContext):
+    if len(message.text) >= 100:
+        await message.answer("Product name must not exceed 100 characters.\nPlease try again.")
+        return
+
+    await state.update_data(name=message.text)
+    await message.answer("Enter product description")
+    await state.set_state(AddProduct.description)
+
+
+@admin_router.message(AddProduct.name)
+async def add_name_error(message: types.Message, state: FSMContext):
+    await message.answer("Invalid input. Please enter the product name as text.")
+
 
 @admin_router.message(AddProduct.description, F.text)
 async def add_description(message: types.Message, state: FSMContext):
@@ -107,13 +122,27 @@ async def add_description(message: types.Message, state: FSMContext):
     await message.answer("Enter product price")
     await state.set_state(AddProduct.price)
 
+@admin_router.message(AddProduct.description)
+async def add_description_error(message: types.Message, state: FSMContext):
+    await message.answer("Invalid input. Please enter the product description as text.")
 
 
 @admin_router.message(AddProduct.price,F.text)
 async def add_price(message: types.Message, state: FSMContext):
+    try:
+        float(message.text)
+    except ValueError:
+        await message.answer("Invalid input. Please enter a numeric value.")
+        return
+
     await state.update_data(price=message.text)
-    await message.answer("Upload product image")
+    await message.answer("Download product image")
     await state.set_state(AddProduct.image)
+
+@admin_router.message(AddProduct.price)
+async def add_price_error(message: types.Message, state: FSMContext):
+    await message.answer("Invalid input. Please enter the product description as text.")
+
 
 @admin_router.message(AddProduct.image, F.photo)
 async def add_image(message: types.Message, state: FSMContext):
@@ -122,3 +151,7 @@ async def add_image(message: types.Message, state: FSMContext):
     data = await state.get_data()
     await message.answer(str(data))
     await state.clear()
+
+@admin_router.message(AddProduct.image)
+async def add_image2(message: types.Message, state: FSMContext):
+    await message.answer("Send product image")
