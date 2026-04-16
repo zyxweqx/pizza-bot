@@ -20,6 +20,7 @@ bot = Bot(
     token=os.getenv("TOKEN"),
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
 )
+bot.my_admins_list = []
 dp = Dispatcher()
 
 dp.include_router(user_private_router)
