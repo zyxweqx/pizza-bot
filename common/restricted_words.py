@@ -1,0 +1,1 @@
+restricted_words = {"banana", "apple", "racoon"}
