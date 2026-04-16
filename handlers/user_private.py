@@ -1,11 +1,11 @@
 from aiogram import types, Router, F
-from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command, or_f
 from aiogram.utils.formatting import as_marked_section, Bold, as_list
 
 from filters.chat_types import ChatTypeFilter
 
 from kbds import reply
+from kbds.reply import get_keyboard
 
 user_private_router = Router()
 user_private_router.message.filter(ChatTypeFilter(['private']))
@@ -13,9 +13,17 @@ user_private_router.message.filter(ChatTypeFilter(['private']))
 @user_private_router.message(CommandStart())
 async def start_cmd(message: types.Message):
     await message.answer("Hi, I'm virtual helper!",
-                         reply_markup=reply.start_kb3.as_markup(
-                            resize_keyboard=True,
-                            input_field_placeholder = 'What are you interested in?'))
+                         reply_markup=get_keyboard(
+                             "Menu",
+                             "About shop",
+                             "Payment options",
+                             "Shipping options",
+                             "Send phone number",
+                             placeholder="What are you interested in?",
+                             sizes=(2, 2)
+                         ),
+                )
+
 
 @user_private_router.message(or_f(Command('menu'), (F.text.lower() == "menu")))
 async def menu_cmd(message: types.Message):
