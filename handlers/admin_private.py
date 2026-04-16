@@ -46,6 +46,13 @@ class AddProduct(StatesGroup):
     price = State()
     image = State()
 
+    texts = {
+        'AddProduct:name': 'Enter name again:',
+        'AddProduct:description': 'Enter description again:',
+        'AddProduct:price': 'Enter price again:',
+        'AddProduct:image': 'This is the last step, so...',
+    }
+
 
 @admin_router.message(StateFilter(None), F.text == "Add product")
 async def add_product(message: types.Message, state: FSMContext):
@@ -70,7 +77,20 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
 @admin_router.message(Command("back"))
 @admin_router.message(F.text.casefold() == "back")
 async def back_step_handler(message: types.Message, state: FSMContext) -> None:
-    await message.answer("OK, you've returned to the previous step")
+
+    current_state = await state.get_state()
+
+    if current_state == AddProduct.name:
+        await message.answer("Previous step isn't exists, please enter name of product or write 'cancel' ")
+        return
+
+    previous = None
+    for step in AddProduct.__all_states__:
+        if step.state == current_state:
+            await state.set_state(previous)
+            await message.answer(f"Ok, you have been returned to previous step \n {AddProduct.texts[previous.state]}")
+            return
+        previous = step
 
 
 @admin_router.message(AddProduct.name,F.text)
@@ -78,6 +98,7 @@ async def add_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
     await message.answer("Enter product description")
     await state.set_state(AddProduct.description)
+
 
 
 @admin_router.message(AddProduct.description, F.text)
