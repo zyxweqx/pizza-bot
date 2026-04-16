@@ -1,50 +1,28 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, KeyboardButtonPollType
+from aiogram.types import KeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
-start_kb = ReplyKeyboardMarkup(
-    keyboard=[
-        [
-            KeyboardButton(text="Menu"),
-            KeyboardButton(text="About us"),
-        ],
-        [
-            KeyboardButton(text="Shipping options"),
-            KeyboardButton(text="Payment options"),
-        ],
-    ],
-    resize_keyboard=True,
-    input_field_placeholder='What are you interesting in?'
-)
-del_kbd = ReplyKeyboardRemove()
 
-start_kb2 = ReplyKeyboardBuilder()
+def get_keyboard(
+        *btns: str,
+        placeholder: str = None,
+        request_contact: int = None,
+        request_location: int = None,
+        sizes: tuple[int] = (2,),
+):
 
-start_kb2.add(
-KeyboardButton(text="Menu"),
-    KeyboardButton(text="About shop"),
-    KeyboardButton(text="Shipping options"),
-    KeyboardButton(text="Payment options"),
-)
-start_kb2.adjust(2,2)
+    keyboard = ReplyKeyboardBuilder()
 
-start_kb3 = ReplyKeyboardBuilder()
+    for index, text in enumerate(btns, start=0):
 
-start_kb3.attach(start_kb2)
-start_kb3.row(
-    KeyboardButton(text="Review"),
-)
+        if request_contact and request_contact == index:
+            keyboard.add(KeyboardButton(text=text, request_contact=True))
 
-test_kb = ReplyKeyboardMarkup(
-    keyboard=[
-        [
-            KeyboardButton(text="Make a survey", request_poll=KeyboardButtonPollType()),
-        ],
-        [
-            KeyboardButton(text="Send a mobile phone ☎️", request_contact=True),
-            KeyboardButton(text="Send a location 🗺", request_location=True),
-        ],
-    ],
-    resize_keyboard=True,
-)
+        elif request_location and request_location == index:
+            keyboard.add(KeyboardButton(text=text, request_location=True))
+        else:
 
+            keyboard.add(KeyboardButton(text=text))
+
+    return keyboard.adjust(*sizes).as_markup(
+        resize_keyboard=True, input_field_placeholder=placeholder)
 
