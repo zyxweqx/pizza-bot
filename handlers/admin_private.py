@@ -1,0 +1,80 @@
+from aiogram import F, Router, types
+from aiogram.filters import Command
+
+from filters.chat_types import ChatTypeFilter, IsAdmin
+from kbds.reply import get_keyboard
+
+
+admin_router = Router()
+admin_router.message.filter(ChatTypeFilter(["private"]), IsAdmin())
+
+
+ADMIN_KB = get_keyboard(
+    "Add product",
+    "Edit product",
+    "Delete product",
+    "I'm just browsing",
+    placeholder="Select an action",
+    sizes=(2, 1, 1),
+)
+
+
+@admin_router.message(Command("admin"))
+async def admin_features(message: types.Message):
+    await message.answer("What would you like to do?", reply_markup=ADMIN_KB)
+
+
+@admin_router.message(F.text == "I'm just browsing")
+async def starring_at_product(message: types.Message):
+    await message.answer("OK, here is the product list")
+
+
+@admin_router.message(F.text == "Edit product")
+async def change_product(message: types.Message):
+    await message.answer("OK, which product do you want to edit?")
+
+
+@admin_router.message(F.text == "Delete product")
+async def delete_product(message: types.Message):
+    await message.answer("Select the product(s) to delete")
+
+
+# FSM (Finite State Machine) handlers below
+
+@admin_router.message(F.text == "Add product")
+async def add_product(message: types.Message):
+    await message.answer(
+        "Enter product name", reply_markup=types.ReplyKeyboardRemove()
+    )
+
+
+@admin_router.message(Command("cancel"))
+@admin_router.message(F.text.casefold() == "cancel")
+async def cancel_handler(message: types.Message) -> None:
+    await message.answer("Actions cancelled", reply_markup=ADMIN_KB)
+
+
+@admin_router.message(Command("back"))
+@admin_router.message(F.text.casefold() == "back")
+async def back_step_handler(message: types.Message) -> None:
+    await message.answer("OK, you've returned to the previous step")
+
+
+@admin_router.message(F.text)
+async def add_name(message: types.Message):
+    await message.answer("Enter product description")
+
+
+@admin_router.message(F.text)
+async def add_description(message: types.Message):
+    await message.answer("Enter product price")
+
+
+@admin_router.message(F.text)
+async def add_price(message: types.Message):
+    await message.answer("Upload product image")
+
+
+@admin_router.message(F.photo)
+async def add_image(message: types.Message):
+    await message.answer("Product added successfully", reply_markup=ADMIN_KB)
