@@ -20,7 +20,7 @@ from middlewares.db import DataBaseSession
 
 
 
-ALLOWED_UPDATES = ['message', 'edited_message']
+ALLOWED_UPDATES = ['message', 'edited_message', 'callback_query']
 
 bot = Bot(
     token=os.getenv("TOKEN"),

@@ -5,7 +5,7 @@ from aiogram.fsm.state import StatesGroup, State
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from database.orm_query import orm_add_product, orm_get_products
+from database.orm_query import orm_add_product, orm_get_products, orm_delete_product
 from filters.chat_types import ChatTypeFilter, IsAdmin
 from kbds.inline import get_callback_btns
 from kbds.reply import get_keyboard
@@ -42,6 +42,14 @@ async def starring_at_product(message: types.Message, session: AsyncSession):
             })
         )
 
+@admin_router.callback_query(F.data.startswith("delete_"))
+async def delete_product(callback: types.CallbackQuery, session: AsyncSession):
+
+   product_id = callback.data.split("_")[1]
+   await orm_delete_product(session, int(product_id))
+
+   await callback.answer("Product deleted")
+   await callback.message.answer("Product deleted!")
 
 
 
