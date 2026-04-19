@@ -29,6 +29,7 @@ class Product(Base):
     description: Mapped[str] = mapped_column(Text)
     price: Mapped[float] = mapped_column(Float(asdecimal=True), nullable=False)
     image: Mapped[str] = mapped_column(String(150))
+    category_id: Mapped[int] = mapped_column(ForeignKey('category.id', ondelete='CASCADE'), nullable=False)
 
 class User(Base):
     __tablename__ = 'user'

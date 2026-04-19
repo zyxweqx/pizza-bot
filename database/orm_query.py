@@ -2,6 +2,7 @@ import math
 
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from database.models import Product, Category, Banner, User, Cart
 
@@ -92,16 +93,17 @@ async def orm_create_categories(session: AsyncSession, categories: list):
 
 async def orm_add_product(session: AsyncSession, data: dict):
     obj = Product(
-        name=data['name'],
-        description=data['description'],
-        price=float(data['price']),
-        image=data['image']
+        name=data["name"],
+        description=data["description"],
+        price=float(data["price"]),
+        image=data["image"],
+        category_id=int(data["category"]),
     )
     session.add(obj)
     await session.commit()
 
-async def orm_get_products(session: AsyncSession):
-    query = select(Product)
+async def orm_get_products(session: AsyncSession, category_id):
+    query = select(Product).where(Product.category_id == int(category_id))
     result = await session.execute(query)
     return result.scalars().all()
 
@@ -116,8 +118,9 @@ async def orm_update_product(session: AsyncSession, product_id: int, data):
         description=data['description'],
         price=float(data['price']),
         image=data['image'],
+        category_id=int(data["category"]),
     )
-    result = await session.execute(query)
+    await session.execute(query)
     await session.commit()
 
 async def orm_delete_product(session: AsyncSession, product_id: int):
@@ -155,3 +158,4 @@ async def orm_add_to_cart(session: AsyncSession, user_id: int, product_id: int):
     else:
         session.add(Cart(user_id=user_id, product_id=product_id, quantity=1))
         await session.commit()
+        return False
