@@ -1,11 +1,17 @@
 from aiogram import F, Router, types
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command, StateFilter, or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from database.orm_query import orm_add_product, orm_get_products, orm_delete_product
+from database.orm_query import (
+    orm_add_product,
+    orm_get_products,
+    orm_delete_product,
+    orm_get_product,
+    orm_update_product,
+)
 from filters.chat_types import ChatTypeFilter, IsAdmin
 from kbds.inline import get_callback_btns
 from kbds.reply import get_keyboard
@@ -22,6 +28,20 @@ ADMIN_KB = get_keyboard(
     sizes=(2,),
 )
 
+class AddProduct(StatesGroup):
+    name = State()
+    description = State()
+    price = State()
+    image = State()
+
+    product_for_change = None
+
+    texts = {
+        'AddProduct:name': 'Enter name again:',
+        'AddProduct:description': 'Enter description again:',
+        'AddProduct:price': 'Enter price again:',
+        'AddProduct:image': 'This is the last step, so...',
+    }
 
 @admin_router.message(Command("admin"))
 async def admin_features(message: types.Message):
@@ -52,20 +72,24 @@ async def delete_product(callback: types.CallbackQuery, session: AsyncSession):
    await callback.message.answer("Product deleted!")
 
 
+@admin_router.callback_query(StateFilter(None), F.data.startswith("change_"))
+async def change_product_callback(
+    callback: types.CallbackQuery, state: FSMContext, session: AsyncSession
+):
+    product_id = callback.data.split("_")[-1]
+
+    product_for_change = await orm_get_product(session, int(product_id))
+
+    AddProduct.product_for_change = product_for_change
+
+    await callback.answer()
+    await callback.message.answer(
+        "Enter product name", reply_markup=types.ReplyKeyboardRemove()
+    )
+    await state.set_state(AddProduct.name)
 
 
-class AddProduct(StatesGroup):
-    name = State()
-    description = State()
-    price = State()
-    image = State()
 
-    texts = {
-        'AddProduct:name': 'Enter name again:',
-        'AddProduct:description': 'Enter description again:',
-        'AddProduct:price': 'Enter price again:',
-        'AddProduct:image': 'This is the last step, so...',
-    }
 
 
 @admin_router.message(StateFilter(None), F.text == "Add product")
@@ -83,7 +107,8 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     current_state = await state.get_data()
     if current_state is None:
         return
-
+    if AddProduct.product_for_change:
+        AddProduct.product_for_change = None
     await state.clear()
     await message.answer("Actions cancelled", reply_markup=ADMIN_KB)
 
@@ -107,33 +132,33 @@ async def back_step_handler(message: types.Message, state: FSMContext) -> None:
         previous = step
 
 
-@admin_router.message(AddProduct.name,F.text)
+@admin_router.message(AddProduct.name, or_f(F.text, F.text == '.'))
 async def add_name(message: types.Message, state: FSMContext):
-    await state.update_data(name=message.text)
+    if message.text == '.':
+        await state.update_data(name=AddProduct.product_for_change.name)
+    else:
+        if len(message.text) >= 100:
+            await message.answer(
+                "Product name must not exceed 100 characters.\nPlease try again."
+            )
+            return
+
+        await state.update_data(name=message.text)
     await message.answer("Enter product description")
     await state.set_state(AddProduct.description)
-
-
-@admin_router.message(AddProduct.name, F.text)
-async def add_name(message: types.Message, state: FSMContext):
-    if len(message.text) >= 100:
-        await message.answer("Product name must not exceed 100 characters.\nPlease try again.")
-        return
-
-    await state.update_data(name=message.text)
-    await message.answer("Enter product description")
-    await state.set_state(AddProduct.description)
-
 
 @admin_router.message(AddProduct.name)
 async def add_name_error(message: types.Message, state: FSMContext):
-    await message.answer("Invalid input. Please enter the product name as text.")
+    await message.answer("You entered invalid data, please enter name of product")
 
 
-@admin_router.message(AddProduct.description, F.text)
+@admin_router.message(AddProduct.description, or_f(F.text, F.text == "."))
 async def add_description(message: types.Message, state: FSMContext):
-    await state.update_data(description=message.text)
-    await message.answer("Enter product price")
+    if message.text == ".":
+        await state.update_data(description=AddProduct.product_for_change.description)
+    else:
+        await state.update_data(description=message.text)
+    await message.answer("Enter price of product")
     await state.set_state(AddProduct.price)
 
 @admin_router.message(AddProduct.description)
@@ -141,16 +166,19 @@ async def add_description_error(message: types.Message, state: FSMContext):
     await message.answer("Invalid input. Please enter the product description as text.")
 
 
-@admin_router.message(AddProduct.price,F.text)
+@admin_router.message(AddProduct.price, or_f(F.text, F.text == "."))
 async def add_price(message: types.Message, state: FSMContext):
-    try:
-        float(message.text)
-    except ValueError:
-        await message.answer("Invalid input. Please enter a numeric value.")
-        return
+    if message.text == ".":
+        await state.update_data(price=AddProduct.product_for_change.price)
+    else:
+        try:
+            float(message.text)
+        except ValueError:
+            await message.answer("Enter valid price")
+            return
 
-    await state.update_data(price=message.text)
-    await message.answer("Download product image")
+        await state.update_data(price=message.text)
+    await message.answer("Load product image")
     await state.set_state(AddProduct.image)
 
 @admin_router.message(AddProduct.price)
@@ -158,21 +186,27 @@ async def add_price_error(message: types.Message, state: FSMContext):
     await message.answer("Invalid input. Please enter the product description as text.")
 
 
-@admin_router.message(AddProduct.image, F.photo)
+@admin_router.message(AddProduct.image, or_f(F.photo, F.text == "."))
 async def add_image(message: types.Message, state: FSMContext,session: AsyncSession):
 
-    await state.update_data(image=message.photo[-1].file_id)
+    if message.text == ".":
+        await state.update_data(image=AddProduct.product_for_change.image)
+    else:
+        await state.update_data(image=message.photo[-1].file_id)
     data = await state.get_data()
     try:
-        await orm_add_product(session, data)
-        await message.answer("Product added successfully", reply_markup=ADMIN_KB)
+        if AddProduct.product_for_change:
+            await orm_update_product(session, AddProduct.product_for_change.id, data)
+        else:
+            await orm_add_product(session, data)
+        await message.answer("Product updated successfully", reply_markup=ADMIN_KB)
         await state.clear()
 
     except Exception as e:
         await message.answer(
             f"Error: \n{str(e)}\n Reach out to the dev, he’s asking for money again", reply_markup=ADMIN_KB)
         await state.clear()
-
+    AddProduct.product_for_change = None
 
 @admin_router.message(AddProduct.image)
 async def add_image2(message: types.Message, state: FSMContext):
