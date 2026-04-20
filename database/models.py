@@ -31,6 +31,7 @@ class Product(Base):
     image: Mapped[str] = mapped_column(String(150))
     category_id: Mapped[int] = mapped_column(ForeignKey('category.id', ondelete='CASCADE'), nullable=False)
 
+    category: Mapped['Category'] = relationship(backref='product')
 class User(Base):
     __tablename__ = 'user'
 
