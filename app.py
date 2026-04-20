@@ -13,7 +13,6 @@ from database.engine import create_db, drop_db, session_maker
 from handlers.admin_private import admin_router
 from handlers.user_group import user_group_router
 from handlers.user_private import user_private_router
-from common.bot_cmds_list import private
 from middlewares.db import DataBaseSession
 
 
@@ -35,10 +34,6 @@ dp.include_router(admin_router)
 
 async def on_startup(bot):
 
-    run_param = False
-    if run_param:
-        await drop_db()
-
     await create_db()
 
 async def on_shutdown(bot):
@@ -51,7 +46,7 @@ async def main():
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
 
     await bot.delete_webhook(drop_pending_updates=True)
-    await bot.set_my_commands(commands=private,scope=BotCommandScopeAllPrivateChats())
+  # await bot.delete_my_commands(scope=types.BotCommandScopeAllPrivateChats())
     await dp.start_polling(bot,allowed_updates=ALLOWED_UPDATES)
 
 asyncio.run(main())
