@@ -148,7 +148,7 @@ async def orm_add_user(
 ##################### Carts #####################
 
 async def orm_add_to_cart(session: AsyncSession, user_id: int, product_id: int):
-    query = select(Cart).where(Cart.user_id == user_id, Cart.product_id == product_id).options(joinedload(Cart.product))
+    query = select(Cart).where(Cart.user_id == user_id, Cart.product_id == product_id)
     cart = await session.execute(query)
     cart = cart.scalar()
     if cart:
@@ -158,7 +158,7 @@ async def orm_add_to_cart(session: AsyncSession, user_id: int, product_id: int):
     else:
         session.add(Cart(user_id=user_id, product_id=product_id, quantity=1))
         await session.commit()
-        return False
+
 
 async def orm_get_user_carts(session: AsyncSession, user_id):
     query = select(Cart).filter(Cart.user_id == user_id).options(joinedload(Cart.product))

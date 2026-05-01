@@ -1,4 +1,4 @@
-from sqlalchemy import String, Text, Float, DateTime, func, BigInteger, ForeignKey
+from sqlalchemy import String, Text, Float, DateTime, func, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -36,7 +36,7 @@ class User(Base):
     __tablename__ = 'user'
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BigInteger, unique=True)
+    user_id: Mapped[int] = mapped_column(unique=True)
     first_name: Mapped[str] = mapped_column(String(150), nullable=True)
     last_name: Mapped[str]  = mapped_column(String(150), nullable=True)
     phone: Mapped[str]  = mapped_column(String(13), nullable=True)

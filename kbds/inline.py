@@ -65,7 +65,7 @@ def get_products_btns(
     keyboard.add(InlineKeyboardButton(text='Cart 🛒',
                callback_data=MenuCallBack(level=3, menu_name='cart').pack()))
     keyboard.add(InlineKeyboardButton(text='Buy 💵',
-               callback_data=MenuCallBack(level=level, menu_name='add_to_cart',product_id=product_id).pack()))
+               callback_data=MenuCallBack(level=level, menu_name='add_to_cart',product_id=product_id, category=category,page=page).pack()))
 
     keyboard.adjust(*sizes)
 
@@ -89,7 +89,7 @@ def get_products_btns(
 
     return keyboard.row(*row).as_markup()
 
-def    get_callback_btns(
+def get_callback_btns(
         *,
         btns: dict[str, str],
         sizes: tuple[int] = (2,)):

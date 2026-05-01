@@ -30,10 +30,10 @@ async def catalog(session,level,menu_name):
 def pages(paginator: Paginator):
     btns = dict()
     if paginator.has_previous():
-        btns["◀ Пред."] = "previous"
+        btns["◀ Prev."] = "previous"
 
     if paginator.has_next():
-        btns["След. ▶"] = "next"
+        btns["Next. ▶"] = "next"
 
     return btns
 
@@ -47,8 +47,8 @@ async def products(session, level, category, page):
     image = InputMediaPhoto(
         media=product.image,
         caption=f"<strong>{product.name}\
-                </strong>\n{product.description}\nСтоимость: {round(product.price, 2)}\n\
-                <strong>Товар {paginator.page} из {paginator.pages}</strong>",
+                </strong>\n{product.description}\nPrice: {round(product.price, 2)}\n\
+                <strong>Product {paginator.page} from {paginator.pages}</strong>",
     )
 
     pagination_btns = pages(paginator)
