@@ -58,36 +58,33 @@ The easiest way to get the bot running is using Docker. It handles all dependenc
    ```
    git clone https://github.com/zyxweqx/pizza-bot.git
    cd pizza-bot
-
+   ```
 2. **Configure Environment:**   
-Create a .env file in the root directory and add your credentials:
+Create a .env file in the root directory and add your credentials: 
     ```
     TOKEN=your_telegram_bot_token
- 
+    ```
 3. **Launch:**
 Run the following command in your terminal:
     ```
     docker-compose up -d --build
-
+    ```
 ### Option 2: Manual Installation
 Use this method if you prefer running the bot directly on your host machine without Docker.
 
 1. **Clone and install dependencies:**
-
-```
+    ```
     git clone https://github.com/zyxweqx/pizza-bot.git 
     cd pizza-bot
     pip install -r requirements.txt
-```
+    ```
 2. **Configure Environment:**  
 Create a .env file in the root directory:
-
-```
+    ```
     TOKEN=your_telegram_bot_token
     DB_URL=sqlite+aiosqlite:///db.sqlite3
-```
-
+    ```
 3. **Initialize and Launch:**
-```
+    ```
     python app.py
-```
+    ```
