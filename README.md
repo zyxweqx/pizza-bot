@@ -31,6 +31,7 @@ Asynchronous Telegram bot for pizza ordering, developed using the aiogram 3 fram
 
 ---
 
+
 ## Project Structure
 ```text
 pizza-bot/
