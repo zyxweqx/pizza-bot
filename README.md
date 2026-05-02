@@ -1,6 +1,6 @@
 # Pizza Delivery Bot
 
-Asynchronous Telegram bot for pizza ordering, developed using the aiogram 3 framework and SQLAlchemy 2.0.
+Asynchronous Telegram bot for pizza ordering, developed using the aiogram 3 framework and SQLAlchemy 2.0. Now fully containerized with Docker.
 
 ---
 
@@ -20,44 +20,74 @@ Asynchronous Telegram bot for pizza ordering, developed using the aiogram 3 fram
 
 ## Tech Stack
 
-| Component          | Technology                           |
-| :----------------- | :----------------------------------- |
-| **Language**       | Python 3.10+                         |
-| **Bot Framework**  | aiogram 3.x (Asynchronous)           |
-| **ORM**            | SQLAlchemy 2.0                       |
-| **Database**       | SQLite via aiosqlite                |
-| **Image Handling** | Pillow                               |
+| Component            | Technology                           |
+| :------------------- | :----------------------------------- |
+| **Language**         | Python 3.10+                         |
+| **Bot Framework**    | aiogram 3.x (Asynchronous)           |
+| **ORM**              | SQLAlchemy 2.0                       |
+| **Database**         | SQLite via aiosqlite                 |
+| **Containerization** | Docker & Docker Compose              |
+| **Image Handling**   | Pillow                               |
 
 ---
 
 ## Project Structure
 ```text
 pizza-bot/
-├── app.py              # Application entry point and polling configuration
+├── banners/            # Static assets for the menu interface
+├── common/             # Static configurations and word filters
 ├── database/           # Data persistence layer (models and ORM logic)
+├── filters/            # Custom aiogram filters (e.g., IsAdmin)
 ├── handlers/           # Request processors for user and admin events
 ├── kbds/               # Keyboard builders (Inline and Reply)
 ├── middlewares/        # Middlewares for session and data injection
 ├── utils/              # Utility classes and pagination logic
-├── common/             # Static configurations and word filters
-└── banners/            # Static assets for the menu interface
+├── .dockerignore       # Files excluded from Docker build context
+├── .gitignore          # Files excluded from Git tracking
+├── app.py              # Application entry point and polling configuration
+├── docker-compose.yml  # Container orchestration settings
+├── Dockerfile          # Docker image configuration
+└── requirements.txt    # Python dependencies
+```
+## Installation and Setup
 
-Installation and Setup
-Clone the repository:
+### Option 1: Running via Docker (Recommended)
+The easiest way to get the bot running is using Docker. It handles all dependencies automatically.
 
+1. **Clone the repository:**  
+   ```
+   git clone https://github.com/zyxweqx/pizza-bot.git
+   cd pizza-bot
 
-git clone [https://github.com/zyxweqx/pizza-bot.git](https://github.com/zyxweqx/pizza-bot.git)
-cd pizza-bot
+2. **Configure Environment:**   
+Create a .env file in the root directory and add your credentials:
+    ```
+    TOKEN=your_telegram_bot_token
+ 
+3. **Launch:**
+Run the following command in your terminal:
+    ```
+    docker-compose up -d --build
 
-Install required packages:
-pip install -r requirements.txt
+### Option 2: Manual Installation
+Use this method if you prefer running the bot directly on your host machine without Docker.
 
+1. **Clone and install dependencies:**
 
-Configure Environment:
-Create a .env file in the project root and add your credentials:
+```
+    git clone https://github.com/zyxweqx/pizza-bot.git 
+    cd pizza-bot
+    pip install -r requirements.txt
+```
+2. **Configure Environment:**  
+Create a .env file in the root directory:
 
-TOKEN=your_telegram_bot_token
-DB_URL=sqlite+aiosqlite:///db.sqlite3
+```
+    TOKEN=your_telegram_bot_token
+    DB_URL=sqlite+aiosqlite:///db.sqlite3
+```
 
-Initialize and Launch:
-python app.py
+3. **Initialize and Launch:**
+```
+    python app.py
+```
