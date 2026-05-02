@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  pizza-bot:
+    build: .
+    container_name: pizza_bot_app
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
