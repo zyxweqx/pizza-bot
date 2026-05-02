@@ -1,6 +1,25 @@
 # Pizza Delivery Bot
 
-Asynchronous Telegram bot for pizza ordering, developed using the aiogram 3 framework and SQLAlchemy 2.0. Now fully containerized with Docker.
+Asynchronous Telegram bot for pizza ordering, developed using the aiogram 3 framework and SQLAlchemy 2.0.
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/aiogram-3.x-2CA5E0.svg?style=flat&logo=telegram&logoColor=white" alt="aiogram">
+  <img src="https://img.shields.io/badge/SQLAlchemy-2.0-red.svg" alt="SQLAlchemy">
+  <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white" alt="Docker">
+</p>
+
+## 📸 Demo
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/e0e80038-c85e-4cff-b484-507098772785" alt="Main Menu" width="180">
+  &nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/e523b485-d4f2-4574-a617-c197d0dd928b" alt="Pizza Catalog" width="180">
+  &nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/b0c39c55-57ee-4f83-aa7f-a7ed2f5e007d" alt="Drinks Catalog" width="180">
+  &nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/68f826f9-6e55-4601-826d-022e596fd9d5" alt="Cart Management" width="180">
+</div>
 
 ---
 
